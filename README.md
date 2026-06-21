@@ -21,6 +21,12 @@ https://github.com/sergejgrigorev2861-sys/project_e_commerce
 
 100% (6 тестов)
 
+## Отчёт о покрытии
+
+```
+poetry run pytest --cov=src --cov-report=html
+```
+
 ## Лицензия
 
 Проект распространяется под лицензией MIT.
