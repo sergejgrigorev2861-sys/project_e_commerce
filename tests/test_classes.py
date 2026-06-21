@@ -58,3 +58,12 @@ def test_product_count_after_category():
     Category("Cat", "Desc1", [p1, p2])
 
     assert Category.product_count == 2
+
+
+def test_load_from_json():
+    from src.classes import load_products_from_json
+    categories = load_products_from_json("data/products.json")
+    assert len(categories) == 2
+    assert categories[0].name == "Смартфоны"
+    assert len(categories[0].products) == 3
+    assert categories[0].products[0].name == "Samsung Galaxy C23 Ultra"
