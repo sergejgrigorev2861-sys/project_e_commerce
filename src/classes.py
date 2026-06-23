@@ -16,11 +16,27 @@ class Product:
     def price(self, value):
         if value <= 0:
             print("Цена не должна быть нулевая или отрицательная")
+        elif value < self._price:
+            answer = input(f"Вы уверены, что хотите понизить цену с {self._price} до {value}? (y/n): ")
+            if answer.lower() == 'y':
+                self._price = value
+            else:
+                print("Понижение цены отменено")
         else:
             self._price = value
 
     @classmethod
-    def new_product(cls, product_data: dict):
+    def new_product(cls, product_data: dict, products_list: list = None):
+        if products_list is None:
+            products_list = []
+
+        for existing_product in products_list:
+            if existing_product.name == product_data["name"]:
+                existing_product.quantity += product_data["quantity"]
+                if product_data["price"] > existing_product.price:
+                    existing_product.price = product_data["price"]
+                return existing_product
+
         return cls(
             name=product_data["name"],
             description=product_data["description"],

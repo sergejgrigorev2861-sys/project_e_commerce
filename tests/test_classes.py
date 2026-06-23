@@ -105,3 +105,28 @@ def test_price_setter_zero():
     product = Product("Телефон", "Смартфон", 10000, 5)
     product.price = 0
     assert product.price == 10000
+
+
+def test_new_product_with_duplicate():
+    existing_product = Product("Телефон", "Описание", 10000, 5)
+    products_list = [existing_product]
+    data = {"name": "Телефон", "description": "Описание", "price": 12000, "quantity": 3}
+    result = Product.new_product(data, products_list)
+
+    assert result.quantity == 8      # 5 + 3
+    assert result.price == 12000     # бо́льшая цена
+    assert result == existing_product  # вернулся существующий объект
+
+
+def test_price_setter_confirmation(monkeypatch):
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    product.price = 8000
+    assert product.price == 8000
+
+
+def test_price_setter_cancel(monkeypatch):
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    monkeypatch.setattr('builtins.input', lambda _: 'n')
+    product.price = 8000
+    assert product.price == 10000  # цена не изменилась
