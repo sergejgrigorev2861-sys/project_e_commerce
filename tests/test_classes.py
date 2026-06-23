@@ -1,4 +1,4 @@
-from src.classes import Product, Category
+from src.classes import Category, Product, load_products_from_json
 
 
 def test_product_init():
@@ -26,9 +26,7 @@ def test_category_init():
 
     assert category.name == "Электроника"
     assert category.description == "Всё для дома"
-    assert len(category.products) == 2
-    assert category.products[0] == p1
-    assert category.products[1] == p2
+    assert len(category._products) == 2
 
 
 def test_category_counters():
@@ -61,9 +59,49 @@ def test_product_count_after_category():
 
 
 def test_load_from_json():
-    from src.classes import load_products_from_json
     categories = load_products_from_json("data/products.json")
     assert len(categories) == 2
     assert categories[0].name == "Смартфоны"
-    assert len(categories[0].products) == 3
-    assert categories[0].products[0].name == "Samsung Galaxy C23 Ultra"
+    assert len(categories[0]._products) == 3
+
+
+def test_add_product():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(product)
+    assert len(category._products) == 1
+    assert Category.product_count == 1
+
+
+def test_product_property():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(product)
+    expected = "Телефон, 10000 руб. Остаток: 5 шт.\n"
+    assert category.products == expected
+
+
+def test_new_product():
+    data = {"name": "Телефон", "description": "Смартфок", "price": 10000, "quantity": 5}
+    product = Product.new_product(data)
+    assert product.name == "Телефон"
+    assert product.price == 10000
+    assert product.quantity == 5
+
+
+def test_price_setter_positive():
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    product.price = 15000
+    assert product.price == 15000
+
+
+def test_price_setter_zero():
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    product.price = 0
+    assert product.price == 10000
