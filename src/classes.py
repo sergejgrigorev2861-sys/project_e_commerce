@@ -26,17 +26,7 @@ class Product:
             self.__price = value
 
     @classmethod
-    def new_product(cls, product_data: dict, products_list: list = None):
-        if products_list is None:
-            products_list = []
-
-        for existing_product in products_list:
-            if existing_product.name == product_data["name"]:
-                existing_product.quantity += product_data["quantity"]
-                if product_data["price"] > existing_product.price:
-                    existing_product.price = product_data["price"]
-                return existing_product
-
+    def new_product(cls, product_data: dict):
         return cls(
             name=product_data["name"],
             description=product_data["description"],
@@ -52,19 +42,29 @@ class Category:
     def __init__(self, name, description, products):
         self.name = name
         self.description = description
-        self._products = products
+        self.__products = products
 
         Category.category_count += 1
         Category.product_count += len(products)
 
     def add_product(self, product):
-        self._products.append(product)
+        self.__products.append(product)
         Category.product_count += 1
+
+    def add_product_with_check(self, product):
+        for existing_product in self.__products:
+            if existing_product.name == product.name:
+                existing_product.quantity += product.quantity
+                if product.price > existing_product.price:
+                    existing_product.price = product.price
+                return
+        self.add_product(product)
+
 
     @property
     def products(self):
         result = ""
-        for product in self._products:
+        for product in self.__products:
             result += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
         return result
 
