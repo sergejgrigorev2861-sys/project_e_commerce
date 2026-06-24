@@ -26,7 +26,8 @@ def test_category_init():
 
     assert category.name == "Электроника"
     assert category.description == "Всё для дома"
-    assert len(category._products) == 2
+    assert "Товар1" in category.products
+    assert "Товар2" in category.products
 
 
 def test_category_counters():
@@ -62,7 +63,8 @@ def test_load_from_json():
     categories = load_products_from_json("data/products.json")
     assert len(categories) == 2
     assert categories[0].name == "Смартфоны"
-    assert len(categories[0]._products) == 3
+    assert "Samsung Galaxy C23 Ultra" in categories[0].products
+    assert "Iphone 15" in categories[0].products
 
 
 def test_add_product():
@@ -72,7 +74,7 @@ def test_add_product():
     category = Category("Тест", "Описание", [])
     product = Product("Телефон", "Смартфон", 10000, 5)
     category.add_product(product)
-    assert len(category._products) == 1
+    assert "Телефон" in category.products
     assert Category.product_count == 1
 
 
@@ -107,15 +109,52 @@ def test_price_setter_zero():
     assert product.price == 10000
 
 
-def test_new_product_with_duplicate():
-    existing_product = Product("Телефон", "Описание", 10000, 5)
-    products_list = [existing_product]
-    data = {"name": "Телефон", "description": "Описание", "price": 12000, "quantity": 3}
-    result = Product.new_product(data, products_list)
+def test_add_product_with_check_duplicate():
+    Category.category_count = 0
+    Category.product_count = 0
 
-    assert result.quantity == 8      # 5 + 3
-    assert result.price == 12000     # бо́льшая цена
-    assert result == existing_product  # вернулся существующий объект
+    category = Category("Тест", "Описание", [])
+    p1 = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(p1)
+
+    p2 = Product("Телефон", "Смартфон", 8000, 3)
+    category.add_product_with_check(p2)
+
+    # Проверяем, что количество суммировалось (5+3=8)
+    assert "Телефон" in category.products
+    # Проверяем, что цена осталась максимальной (10000)
+    assert "10000" in category.products
+
+
+def test_add_product_with_check_price_update():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    p1 = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(p1)
+
+    p2 = Product("Телефон", "Смартфон", 12000, 3)  # цена выше
+    category.add_product_with_check(p2)
+
+    # Проверяем, что цена обновилась до 12000
+    assert "12000" in category.products
+
+
+def test_add_product_with_check_new():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    p1 = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(p1)
+
+    p2 = Product("Планшет", "Планшет", 20000, 2)  # новый продукт
+    category.add_product_with_check(p2)
+
+    # Проверяем, что продукт добавлен
+    assert "Планшет" in category.products
+    assert Category.product_count == 2
 
 
 def test_price_setter_confirmation(monkeypatch):

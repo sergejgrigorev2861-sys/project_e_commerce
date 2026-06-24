@@ -2,7 +2,7 @@ import json
 
 
 class Product:
-    def __init__(self, name, description, price, quantity):
+    def __init__(self, name: str, description: str, price: float, quantity: int):
         self.name = name
         self.description = description
         self.__price = price
@@ -26,7 +26,7 @@ class Product:
             self.__price = value
 
     @classmethod
-    def new_product(cls, product_data: dict):
+    def new_product(cls, product_data: dict) -> "Product":
         return cls(
             name=product_data["name"],
             description=product_data["description"],
@@ -39,7 +39,7 @@ class Category:
     category_count = 0
     product_count = 0
 
-    def __init__(self, name, description, products):
+    def __init__(self, name: str, description: str, products: list):
         self.name = name
         self.description = description
         self.__products = products
@@ -47,11 +47,11 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(products)
 
-    def add_product(self, product):
+    def add_product(self, product) -> None:
         self.__products.append(product)
         Category.product_count += 1
 
-    def add_product_with_check(self, product):
+    def add_product_with_check(self, product) -> None:
         for existing_product in self.__products:
             if existing_product.name == product.name:
                 existing_product.quantity += product.quantity
@@ -60,9 +60,8 @@ class Category:
                 return
         self.add_product(product)
 
-
     @property
-    def products(self):
+    def products(self) -> str:
         result = ""
         for product in self.__products:
             result += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
