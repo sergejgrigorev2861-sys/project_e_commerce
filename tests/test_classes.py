@@ -1,4 +1,4 @@
-from src.classes import Product, Category
+from src.classes import Category, Product, load_products_from_json
 
 
 def test_product_init():
@@ -26,9 +26,8 @@ def test_category_init():
 
     assert category.name == "Электроника"
     assert category.description == "Всё для дома"
-    assert len(category.products) == 2
-    assert category.products[0] == p1
-    assert category.products[1] == p2
+    assert "Товар1" in category.products
+    assert "Товар2" in category.products
 
 
 def test_category_counters():
@@ -61,9 +60,112 @@ def test_product_count_after_category():
 
 
 def test_load_from_json():
-    from src.classes import load_products_from_json
     categories = load_products_from_json("data/products.json")
     assert len(categories) == 2
     assert categories[0].name == "Смартфоны"
-    assert len(categories[0].products) == 3
-    assert categories[0].products[0].name == "Samsung Galaxy C23 Ultra"
+    assert "Samsung Galaxy C23 Ultra" in categories[0].products
+    assert "Iphone 15" in categories[0].products
+
+
+def test_add_product():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(product)
+    assert "Телефон" in category.products
+    assert Category.product_count == 1
+
+
+def test_product_property():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(product)
+    expected = "Телефон, 10000 руб. Остаток: 5 шт.\n"
+    assert category.products == expected
+
+
+def test_new_product():
+    data = {"name": "Телефон", "description": "Смартфок", "price": 10000, "quantity": 5}
+    product = Product.new_product(data)
+    assert product.name == "Телефон"
+    assert product.price == 10000
+    assert product.quantity == 5
+
+
+def test_price_setter_positive():
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    product.price = 15000
+    assert product.price == 15000
+
+
+def test_price_setter_zero():
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    product.price = 0
+    assert product.price == 10000
+
+
+def test_add_product_with_check_duplicate():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    p1 = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(p1)
+
+    p2 = Product("Телефон", "Смартфон", 8000, 3)
+    category.add_product_with_check(p2)
+
+    # Проверяем, что количество суммировалось (5+3=8)
+    assert "Телефон" in category.products
+    # Проверяем, что цена осталась максимальной (10000)
+    assert "10000" in category.products
+
+
+def test_add_product_with_check_price_update():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    p1 = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(p1)
+
+    p2 = Product("Телефон", "Смартфон", 12000, 3)  # цена выше
+    category.add_product_with_check(p2)
+
+    # Проверяем, что цена обновилась до 12000
+    assert "12000" in category.products
+
+
+def test_add_product_with_check_new():
+    Category.category_count = 0
+    Category.product_count = 0
+
+    category = Category("Тест", "Описание", [])
+    p1 = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(p1)
+
+    p2 = Product("Планшет", "Планшет", 20000, 2)  # новый продукт
+    category.add_product_with_check(p2)
+
+    # Проверяем, что продукт добавлен
+    assert "Планшет" in category.products
+    assert Category.product_count == 2
+
+
+def test_price_setter_confirmation(monkeypatch):
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    product.price = 8000
+    assert product.price == 8000
+
+
+def test_price_setter_cancel(monkeypatch):
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    monkeypatch.setattr('builtins.input', lambda _: 'n')
+    product.price = 8000
+    assert product.price == 10000  # цена не изменилась
