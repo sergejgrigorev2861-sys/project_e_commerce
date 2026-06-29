@@ -57,7 +57,7 @@ class Category:
         total_quantity = sum(product.quantity for product in self.__products)
         return f"Название категории: {self.name}, количество продуктов: {total_quantity} шт."
 
-    def __iter__(self) -> CategoryIterator:
+    def __iter__(self) -> "CategoryIterator":
         return CategoryIterator(self)
 
     def add_product(self, product: "Product") -> None:
