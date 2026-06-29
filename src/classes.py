@@ -2,18 +2,24 @@ import json
 
 
 class Product:
-    def __init__(self, name: str, description: str, price: float, quantity: int):
+    def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
         self.name = name
         self.description = description
         self.__price = price
         self.quantity = quantity
 
+    def __str__(self) -> str:
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
+
+    def __add__(self, other: "Product") -> float:
+        return (self.__price * self.quantity) + (other.__price * other.quantity)
+
     @property
-    def price(self):
+    def price(self) -> float:
         return self.__price
 
     @price.setter
-    def price(self, value):
+    def price(self, value: float) -> None:
         if value <= 0:
             print("Цена не должна быть нулевая или отрицательная")
         elif value < self.__price:
@@ -39,7 +45,7 @@ class Category:
     category_count = 0
     product_count = 0
 
-    def __init__(self, name: str, description: str, products: list):
+    def __init__(self, name: str, description: str, products: list) -> None:
         self.name = name
         self.description = description
         self.__products = products
@@ -47,11 +53,18 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(products)
 
-    def add_product(self, product) -> None:
+    def __str__(self) -> str:
+        total_quantity = sum(product.quantity for product in self.__products)
+        return f"Название категории: {self.name}, количество продуктов: {total_quantity} шт."
+
+    def __iter__(self) -> "CategoryIterator":
+        return CategoryIterator(self)
+
+    def add_product(self, product: "Product") -> None:
         self.__products.append(product)
         Category.product_count += 1
 
-    def add_product_with_check(self, product) -> None:
+    def add_product_with_check(self, product: "Product") -> None:
         for existing_product in self.__products:
             if existing_product.name == product.name:
                 existing_product.quantity += product.quantity
@@ -59,6 +72,9 @@ class Category:
                     existing_product.price = product.price
                 return
         self.add_product(product)
+
+    def get_products(self) -> list:
+        return self.__products
 
     @property
     def products(self) -> str:
@@ -92,3 +108,20 @@ def load_products_from_json(file_path: str):
         categories.append(category)
 
     return categories
+
+
+class CategoryIterator:
+    def __init__(self, category: "Category") -> None:
+        self.__category = category
+        self.__products = category.get_products()
+        self.__index = 0
+
+    def __iter__(self) -> "CategoryIterator":
+        return CategoryIterator(self.__category)
+
+    def __next__(self) -> "Product":
+        if self.__index < len(self.__products):
+            product = self.__products[self.__index]
+            self.__index += 1
+            return product
+        raise StopIteration

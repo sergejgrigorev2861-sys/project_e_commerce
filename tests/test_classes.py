@@ -1,3 +1,5 @@
+import pytest
+
 from src.classes import Category, Product, load_products_from_json
 
 
@@ -169,3 +171,76 @@ def test_price_setter_cancel(monkeypatch):
     monkeypatch.setattr('builtins.input', lambda _: 'n')
     product.price = 8000
     assert product.price == 10000  # цена не изменилась
+
+
+def test_product_str():
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    assert str(product) == "Телефон, 10000 руб. Остаток: 5 шт."
+
+
+def test_product_add():
+    p1 = Product("A", "desc", 100, 10)
+    p2 = Product("B", "desc", 200, 2)
+    assert p1 + p2 == 1400.0
+
+
+def test_category_str():
+    category = Category("Тест", "Описание", [])
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    category.add_product(product)
+    assert str(category) == "Название категории: Тест, количество продуктов: 5 шт."
+
+
+def test_category_iterator():
+    """Тест: итератор категории перебирает все продукты."""
+    category = Category("Тест", "Описание", [])
+    p1 = Product("A", "desc A", 100.0, 5)
+    p2 = Product("B", "desc B", 200.0, 3)
+    category.add_product(p1)
+    category.add_product(p2)
+
+    products = [product.name for product in category]
+    assert products == ["A", "B"]
+
+
+def test_category_iterator_iter_method():
+    category = Category("Тест", "Описание", [])
+    p1 = Product("A", "desc A", 100.0, 5)
+    p2 = Product("B", "desc B", 200.0, 3)
+    category.add_product(p1)
+    category.add_product(p2)
+
+    iterator1 = category.__iter__()   # прямой вызов
+    assert next(iterator1) == p1
+    assert next(iterator1) == p2
+
+    # Повторный вызов __iter__ должен дать НОВЫЙ итератор
+    iterator2 = category.__iter__()
+    assert next(iterator2) == p1
+    assert next(iterator2) == p2
+
+    # iterator1 и iterator2 — разные объекты
+    assert iterator1 is not iterator2
+
+
+def test_category_iterator_next():
+    category = Category("Тест", "Описание", [])
+    p1 = Product("A", "desc A", 100.0, 5)
+    category.add_product(p1)
+
+    iterator = iter(category)
+    assert next(iterator) == p1
+
+    with pytest.raises(StopIteration):
+        next(iterator)
+
+
+def test_category_iterator_iter_on_iterator():
+    category = Category("Тест", "Описание", [])
+    p1 = Product("A", "desc A", 100.0, 5)
+    category.add_product(p1)
+
+    iterator = iter(category)          # создаём итератор
+    iterator2 = iter(iterator)         # вызываем __iter__ на итераторе
+
+    assert next(iterator2) == p1       # должен вернуть первый продукт
