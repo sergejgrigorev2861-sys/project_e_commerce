@@ -1,6 +1,7 @@
 import pytest
 
-from src.classes import Category, Product, load_products_from_json
+from src.classes import (Category, LawnGrass, Product, Smartphone,
+                         load_products_from_json)
 
 
 def test_product_init():
@@ -244,3 +245,39 @@ def test_category_iterator_iter_on_iterator():
     iterator2 = iter(iterator)         # вызываем __iter__ на итераторе
 
     assert next(iterator2) == p1       # должен вернуть первый продукт
+
+
+def test_product_add_same_class_with_fixture(sample_product):
+    p1 = sample_product
+    p2 = Product("B", "desc", 200, 2)
+    assert p1 + p2 == 1000.0 + 400.0  # 100*10 + 200*2
+
+
+def test_smartphone_str_with_fixture(sample_smartphone):
+    phone = sample_smartphone
+    assert str(phone) == "S23, 100 руб. Остаток: 5 шт."
+
+
+def test_lawn_grass_str_with_fixture(sample_grass):
+    grass = sample_grass
+    assert str(grass) == "Grass, 50 руб. Остаток: 10 шт."
+
+
+def test_add_product_valid_with_fixture(sample_category, sample_product):
+    category = sample_category
+    product = sample_product
+    category.add_product(product)
+    assert len(category.get_products()) == 1
+
+
+def test_product_add_different_classes_raises():
+    phone = Smartphone("S23", "desc", 100, 5, 95.5, "S23", 128, "black")
+    grass = LawnGrass("Grass", "desc", 50, 10, "RU", "7 days", "green")
+    with pytest.raises(TypeError, match="Нельзя складывать товары разных классов"):
+        _ = phone + grass
+
+
+def test_add_product_invalid_raises():
+    category = Category("Test", "desc", [])
+    with pytest.raises(TypeError, match="Можно добавлять только объекты Product или его наследников"):
+        category.add_product("not a product")  # type: ignore
