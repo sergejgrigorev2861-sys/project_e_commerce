@@ -157,7 +157,8 @@ class CategoryIterator:
         self.__index = 0
 
     def __iter__(self) -> "CategoryIterator":
-        return CategoryIterator(self.__category)
+        self.__index = 0
+        return self
 
     def __next__(self) -> "Product":
         if self.__index < len(self.__products):
