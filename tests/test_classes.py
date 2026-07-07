@@ -281,3 +281,49 @@ def test_add_product_invalid_raises():
     category = Category("Test", "desc", [])
     with pytest.raises(TypeError, match="Можно добавлять только объекты Product или его наследников"):
         category.add_product("not a product")  # type: ignore
+
+
+def test_base_product_abstract():
+    """Тест: BaseProduct — абстрактный класс, нельзя создать напрямую."""
+    from src.classes import BaseProduct
+    with pytest.raises(TypeError):
+        BaseProduct()  # нельзя создать абстрактный класс напрямую
+
+
+def test_product_inherits_base():
+    """Тест: Product наследует BaseProduct."""
+    from src.classes import BaseProduct, Product
+    product = Product("Тест", "Описание", 100, 5)
+    assert isinstance(product, BaseProduct)
+
+
+def test_product_repr():
+    """Тест: repr() возвращает правильную строку."""
+    from src.classes import Product
+    product = Product("Ноутбук", "Игровой", 150000, 3)
+    expected = "Product('Ноутбук', 'Игровой', 150000, 3)"
+    assert repr(product) == expected
+
+
+def test_smartphone_repr():
+    """Тест: repr() работает для наследников."""
+    from src.classes import Smartphone
+    phone = Smartphone("S23", "desc", 100, 5, 95.5, "S23", 128, "black")
+    expected = "Smartphone('S23', 'desc', 100, 5)"
+    assert repr(phone) == expected
+
+
+def test_lawn_grass_repr():
+    """Тест: repr() работает для LawnGrass."""
+    from src.classes import LawnGrass
+    grass = LawnGrass("Grass", "desc", 50, 10, "RU", "7 days", "green")
+    expected = "LawnGrass('Grass', 'desc', 50, 10)"
+    assert repr(grass) == expected
+
+
+def test_product_get_info():
+    """Тест: get_info() возвращает строку с информацией о продукте."""
+    from src.classes import Product
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    expected = "Телефон, 10000 руб. Остаток: 5 шт."
+    assert product.get_info() == expected

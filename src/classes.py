@@ -1,12 +1,27 @@
 import json
+from abc import ABC, abstractmethod
 
 
-class Product:
+class BaseProduct(ABC):
+    @abstractmethod
+    def get_info(selfself) -> str:
+        pass  # pragma: no cover
+
+
+class ReprMixin:
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.name!r}, {self.description!r}, {self.price}, {self.quantity})"
+
+
+class Product(BaseProduct, ReprMixin):
     def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
         self.name = name
         self.description = description
         self.__price = price
         self.quantity = quantity
+
+    def get_info(self) -> str:
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
 
     def __str__(self) -> str:
         return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
