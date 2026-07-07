@@ -94,7 +94,30 @@ class LawnGrass(Product):
         self.color = color
 
 
-class Category:
+class BaseContainer(ABC):
+    @abstractmethod
+    def get_items(self):
+        pass  # pragma: no cover
+
+    @abstractmethod
+    def get_total_quantity(self):
+        pass  # pragma: no cover
+
+
+class Order(BaseContainer):
+    def __init__(self, product: Product, quantity: int) -> None:
+        self.product = product
+        self.quantity = quantity
+        self.total_price = product.price * quantity
+
+    def get_items(self):
+        return [self.product]
+
+    def get_total_quantity(self):
+        return self.quantity
+
+
+class Category(BaseContainer):
     category_count = 0
     product_count = 0
 
@@ -137,6 +160,12 @@ class Category:
         for product in self.__products:
             result += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
         return result
+
+    def get_items(self):
+        return self.__products
+
+    def get_total_quantity(self):
+        return sum(product.quantity for product in self.__products)
 
 
 def load_products_from_json(file_path: str):

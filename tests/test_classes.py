@@ -1,6 +1,6 @@
 import pytest
 
-from src.classes import (Category, LawnGrass, Product, Smartphone,
+from src.classes import (Category, LawnGrass, Order, Product, Smartphone,
                          load_products_from_json)
 
 
@@ -327,3 +327,42 @@ def test_product_get_info():
     product = Product("Телефон", "Смартфон", 10000, 5)
     expected = "Телефон, 10000 руб. Остаток: 5 шт."
     assert product.get_info() == expected
+
+
+def test_order_init():
+    """Тест: создание заказа."""
+    product = Product("A", "desc", 100, 10)
+    order = Order(product, 3)
+    assert order.product == product
+    assert order.quantity == 3
+    assert order.total_price == 300
+
+
+def test_order_get_items():
+    """Тест: get_items() возвращает список с продуктом."""
+    product = Product("A", "desc", 100, 10)
+    order = Order(product, 3)
+    assert order.get_items() == [product]
+
+
+def test_order_get_total_quantity():
+    """Тест: get_total_quantity() возвращает количество."""
+    product = Product("A", "desc", 100, 10)
+    order = Order(product, 3)
+    assert order.get_total_quantity() == 3
+
+
+def test_category_get_items():
+    """Тест: get_items() возвращает список продуктов в категории."""
+    p1 = Product("A", "desc", 100, 10)
+    p2 = Product("B", "desc", 200, 5)
+    category = Category("Test", "desc", [p1, p2])
+    assert category.get_items() == [p1, p2]
+
+
+def test_category_get_total_quantity():
+    """Тест: get_total_quantity() возвращает общее количество продуктов."""
+    p1 = Product("A", "desc", 100, 10)
+    p2 = Product("B", "desc", 200, 5)
+    category = Category("Test", "desc", [p1, p2])
+    assert category.get_total_quantity() == 15
