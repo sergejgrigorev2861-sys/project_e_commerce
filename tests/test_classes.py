@@ -366,3 +366,28 @@ def test_category_get_total_quantity():
     p2 = Product("B", "desc", 200, 5)
     category = Category("Test", "desc", [p1, p2])
     assert category.get_total_quantity() == 15
+
+
+def test_product_zero_quantity():
+    from src.classes import ZeroQuantityError
+    with pytest.raises(ZeroQuantityError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product("Test", "desc", 100, 0)
+
+
+def test_category_middle_price():
+    p1 = Product("A", "desc", 100, 5)
+    p2 = Product("B", "desc", 200, 3)
+    category = Category("Test", "desc", [p1, p2])
+    assert category.middle_price() == 150.0
+
+
+def test_category_middle_price_empty():
+    category = Category("Empty", "desc", [])
+    assert category.middle_price() == 0
+
+
+def test_order_zero_quantity():
+    from src.classes import ZeroQuantityError
+    product = Product("A", "desc", 100, 10)
+    with pytest.raises(ZeroQuantityError, match="Товар с нулевым количеством не может быть добавлен"):
+        Order(product, 0)

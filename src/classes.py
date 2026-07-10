@@ -2,9 +2,13 @@ import json
 from abc import ABC, abstractmethod
 
 
+class ZeroQuantityError(Exception):
+    pass
+
+
 class BaseProduct(ABC):
     @abstractmethod
-    def get_info(selfself) -> str:
+    def get_info(self) -> str:
         pass  # pragma: no cover
 
 
@@ -18,6 +22,8 @@ class Product(BaseProduct, ReprMixin):
         self.name = name
         self.description = description
         self.__price = price
+        if quantity <= 0:
+            raise ZeroQuantityError("Товар с нулевым количеством не может быть добавлен")
         self.quantity = quantity
 
     def get_info(self) -> str:
@@ -106,6 +112,8 @@ class BaseContainer(ABC):
 
 class Order(BaseContainer):
     def __init__(self, product: Product, quantity: int) -> None:
+        if quantity <= 0:
+            raise ZeroQuantityError("Товар с нулевым количеством не может быть добавлен")
         self.product = product
         self.quantity = quantity
         self.total_price = product.price * quantity
@@ -166,6 +174,13 @@ class Category(BaseContainer):
 
     def get_total_quantity(self):
         return sum(product.quantity for product in self.__products)
+
+    def middle_price(self) -> float:
+        try:
+            total = sum(product.price for product in self.__products)
+            return round(total / len(self.__products), 2)
+        except ZeroDivisionError:
+            return 0
 
 
 def load_products_from_json(file_path: str):
