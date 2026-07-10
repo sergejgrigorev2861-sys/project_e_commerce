@@ -1,12 +1,33 @@
 import json
+from abc import ABC, abstractmethod
 
 
-class Product:
+class ZeroQuantityError(Exception):
+    pass
+
+
+class BaseProduct(ABC):
+    @abstractmethod
+    def get_info(self) -> str:
+        pass  # pragma: no cover
+
+
+class ReprMixin:
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.name!r}, {self.description!r}, {self.price}, {self.quantity})"
+
+
+class Product(BaseProduct, ReprMixin):
     def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
         self.name = name
         self.description = description
         self.__price = price
+        if quantity <= 0:
+            raise ZeroQuantityError("Товар с нулевым количеством не может быть добавлен")
         self.quantity = quantity
+
+    def get_info(self) -> str:
+        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
 
     def __str__(self) -> str:
         return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
@@ -79,7 +100,32 @@ class LawnGrass(Product):
         self.color = color
 
 
-class Category:
+class BaseContainer(ABC):
+    @abstractmethod
+    def get_items(self):
+        pass  # pragma: no cover
+
+    @abstractmethod
+    def get_total_quantity(self):
+        pass  # pragma: no cover
+
+
+class Order(BaseContainer):
+    def __init__(self, product: Product, quantity: int) -> None:
+        if quantity <= 0:
+            raise ZeroQuantityError("Товар с нулевым количеством не может быть добавлен")
+        self.product = product
+        self.quantity = quantity
+        self.total_price = product.price * quantity
+
+    def get_items(self):
+        return [self.product]
+
+    def get_total_quantity(self):
+        return self.quantity
+
+
+class Category(BaseContainer):
     category_count = 0
     product_count = 0
 
@@ -122,6 +168,19 @@ class Category:
         for product in self.__products:
             result += f"{product.name}, {product.price} руб. Остаток: {product.quantity} шт.\n"
         return result
+
+    def get_items(self):
+        return self.__products
+
+    def get_total_quantity(self):
+        return sum(product.quantity for product in self.__products)
+
+    def middle_price(self) -> float:
+        try:
+            total = sum(product.price for product in self.__products)
+            return round(total / len(self.__products), 2)
+        except ZeroDivisionError:
+            return 0
 
 
 def load_products_from_json(file_path: str):

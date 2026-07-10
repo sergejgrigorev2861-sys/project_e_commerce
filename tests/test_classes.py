@@ -1,6 +1,6 @@
 import pytest
 
-from src.classes import (Category, LawnGrass, Product, Smartphone,
+from src.classes import (Category, LawnGrass, Order, Product, Smartphone,
                          load_products_from_json)
 
 
@@ -281,3 +281,113 @@ def test_add_product_invalid_raises():
     category = Category("Test", "desc", [])
     with pytest.raises(TypeError, match="Можно добавлять только объекты Product или его наследников"):
         category.add_product("not a product")  # type: ignore
+
+
+def test_base_product_abstract():
+    """Тест: BaseProduct — абстрактный класс, нельзя создать напрямую."""
+    from src.classes import BaseProduct
+    with pytest.raises(TypeError):
+        BaseProduct()  # нельзя создать абстрактный класс напрямую
+
+
+def test_product_inherits_base():
+    """Тест: Product наследует BaseProduct."""
+    from src.classes import BaseProduct, Product
+    product = Product("Тест", "Описание", 100, 5)
+    assert isinstance(product, BaseProduct)
+
+
+def test_product_repr():
+    """Тест: repr() возвращает правильную строку."""
+    from src.classes import Product
+    product = Product("Ноутбук", "Игровой", 150000, 3)
+    expected = "Product('Ноутбук', 'Игровой', 150000, 3)"
+    assert repr(product) == expected
+
+
+def test_smartphone_repr():
+    """Тест: repr() работает для наследников."""
+    from src.classes import Smartphone
+    phone = Smartphone("S23", "desc", 100, 5, 95.5, "S23", 128, "black")
+    expected = "Smartphone('S23', 'desc', 100, 5)"
+    assert repr(phone) == expected
+
+
+def test_lawn_grass_repr():
+    """Тест: repr() работает для LawnGrass."""
+    from src.classes import LawnGrass
+    grass = LawnGrass("Grass", "desc", 50, 10, "RU", "7 days", "green")
+    expected = "LawnGrass('Grass', 'desc', 50, 10)"
+    assert repr(grass) == expected
+
+
+def test_product_get_info():
+    """Тест: get_info() возвращает строку с информацией о продукте."""
+    from src.classes import Product
+    product = Product("Телефон", "Смартфон", 10000, 5)
+    expected = "Телефон, 10000 руб. Остаток: 5 шт."
+    assert product.get_info() == expected
+
+
+def test_order_init():
+    """Тест: создание заказа."""
+    product = Product("A", "desc", 100, 10)
+    order = Order(product, 3)
+    assert order.product == product
+    assert order.quantity == 3
+    assert order.total_price == 300
+
+
+def test_order_get_items():
+    """Тест: get_items() возвращает список с продуктом."""
+    product = Product("A", "desc", 100, 10)
+    order = Order(product, 3)
+    assert order.get_items() == [product]
+
+
+def test_order_get_total_quantity():
+    """Тест: get_total_quantity() возвращает количество."""
+    product = Product("A", "desc", 100, 10)
+    order = Order(product, 3)
+    assert order.get_total_quantity() == 3
+
+
+def test_category_get_items():
+    """Тест: get_items() возвращает список продуктов в категории."""
+    p1 = Product("A", "desc", 100, 10)
+    p2 = Product("B", "desc", 200, 5)
+    category = Category("Test", "desc", [p1, p2])
+    assert category.get_items() == [p1, p2]
+
+
+def test_category_get_total_quantity():
+    """Тест: get_total_quantity() возвращает общее количество продуктов."""
+    p1 = Product("A", "desc", 100, 10)
+    p2 = Product("B", "desc", 200, 5)
+    category = Category("Test", "desc", [p1, p2])
+    assert category.get_total_quantity() == 15
+
+
+def test_product_zero_quantity():
+    from src.classes import ZeroQuantityError
+    with pytest.raises(ZeroQuantityError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product("Test", "desc", 100, 0)
+
+
+def test_category_middle_price():
+    p1 = Product("A", "desc", 100, 5)
+    p2 = Product("B", "desc", 200, 3)
+    category = Category("Test", "desc", [p1, p2])
+    assert category.middle_price() == 150.0
+
+
+def test_category_middle_price_empty():
+    category = Category("Empty", "desc", [])
+    assert category.middle_price() == 0
+
+
+def test_order_zero_quantity():
+    from src.classes import ZeroQuantityError
+    product = Product("A", "desc", 100, 10)
+    with pytest.raises(ZeroQuantityError, match="Товар с нулевым количеством не может быть добавлен"):
+        Order(product, 0)
